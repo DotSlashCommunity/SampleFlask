@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Calcy | @ksdme</title>
+  </head>
+  <body>
+
+    <style type="text/css">
+
+      .center {
+        width: 45%;
+
+        position: absolute;
+        left: 50%; top: 50%;
+        transform: translate(-50%, -50%);
+        
+        text-align: center;
+      }
+
+      .expr {
+        width: 100%;
+
+        font-size: 80px;
+        text-align: center;
+
+        outline: none;
+        border: none;
+      }
+
+      .alert {
+        color: red;
+        font-size: medium;
+        text-align: center;
+        font-family: monospace;
+      }
+
+    </style>
+
+    <!-- where we accept input from -->
+    <div class="center">
+      <input type="text" class="expr" id="expr" placeholder="Talk Math to Me!" />
+      <br/><span class="alert" id="alert">&nbsp;</span>
+    </div>
+
+
+    <!-- -->
+    <script type="text/javascript">
+      
+      var ExprField, AlertMsg, Empty = " ";
+
+      window.onload = function() {
+        ExprField = document.getElementById("expr");
+        AlertMsg = document.getElementById("alert");
+
+        document.onkeydown = function(event) {
+          if (event.keyCode == 13)
+            solve(ExprField.value);
+        }
+      };
+
+      /* executed with the expr str*/
+      var solve = function(expr) {
+
+        /* preprcess expr text */
+        expr = expr.replace("+", "%2B");
+
+        fetch("/solve?e="+expr).then(function(response) {
+          response.json().then(function(data) {
+            reflectUI(data);
+          });
+        });
+      }
+
+      var reflectUI = function(data) {
+        console.log(data)
+        if (!data.ok) {
+          switch(data.msg) {
+            case "MissingExpr": AlertMsg.innerHTML = "dude, I need that shit mate, gimme an expr!"; break;
+            case "EmptyExpr": AlertMsg.innerHTML = "what are you a dummy?, I need an expr to solve!"; break;
+            case "NameErr": AlertMsg.innerHTML = "yeah, fuck you too, use vars with their true names!"; break;
+            case "SyntaxErr": AlertMsg.innerHTML = "the thing you are holding is a computer, if you can't use it ask someone for help!"; break;
+          }
+        } else {
+          AlertMsg.innerHTML = Empty;
+          ExprField.value = data.ans;
+        }
+      }
+
+    </script>
+  </body>
+</html>
